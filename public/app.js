@@ -19,6 +19,7 @@ const API = {
 let currentView = 'feed';
 let personas = [];
 let allTweets = [];
+let isGenerating = false;
 
 // ============================================
 // Init
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupCompose();
   setupGenerate();
   setupModelInput();
+  setupInfiniteScroll();
   renderSuggestedPersonas();
 });
 
@@ -195,50 +197,7 @@ function setupCompose() {
 function setupGenerate() {
   const btn = document.getElementById('btn-generate');
 
-  btn.addEventListener('click', async () => {
-    btn.disabled = true;
-    const textEl = btn.querySelector('.generate-text');
-    const spinnerEl = btn.querySelector('.generate-spinner');
-    textEl.style.display = 'none';
-    spinnerEl.style.display = 'block';
-    btn.querySelector('svg').style.display = 'none';
-
-    try {
-      const res = await fetch(API.generate, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ count: 3 })
-      });
-      const tweets = await res.json();
-
-      if (tweets.length > 0) {
-        const container = document.getElementById('feed-container');
-        const emptyState = document.getElementById('feed-empty');
-        emptyState.style.display = 'none';
-
-        tweets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        tweets.forEach((tweet, i) => {
-          setTimeout(() => {
-            const el = createTweetElement(tweet, true);
-            container.prepend(el);
-          }, i * 200);
-        });
-
-        updateStats();
-        showToast(`${tweets.length} new tweets from AI personas!`);
-      } else {
-        showToast('No tweets generated. Check your API key.');
-      }
-    } catch (err) {
-      showToast('Generation failed. Check your API key.');
-      console.error(err);
-    }
-
-    btn.disabled = false;
-    textEl.style.display = 'inline';
-    spinnerEl.style.display = 'none';
-    btn.querySelector('svg').style.display = 'inline';
-  });
+  btn.addEventListener('click', () => generateTweets(false));
 }
 
 // ============================================
@@ -538,6 +497,92 @@ async function setupModelInput() {
 
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') saveBtn.click();
+  });
+}
+
+// ============================================
+// Generate Tweets (shared logic)
+// ============================================
+
+async function generateTweets(silent = false) {
+  if (isGenerating) return;
+  isGenerating = true;
+
+  const btn = document.getElementById('btn-generate');
+  const textEl = btn.querySelector('.generate-text');
+  const spinnerEl = btn.querySelector('.generate-spinner');
+  const loadingEl = document.getElementById('feed-loading');
+
+  btn.disabled = true;
+  textEl.style.display = 'none';
+  spinnerEl.style.display = 'block';
+  btn.querySelector('svg').style.display = 'none';
+  if (silent) loadingEl.style.display = 'flex';
+
+  try {
+    const res = await fetch(API.generate, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ count: 3 })
+    });
+    const tweets = await res.json();
+
+    if (tweets.length > 0) {
+      const container = document.getElementById('feed-container');
+      const emptyState = document.getElementById('feed-empty');
+      emptyState.style.display = 'none';
+
+      tweets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      if (silent) {
+        // Infinite scroll: append to bottom
+        tweets.reverse().forEach(tweet => {
+          container.appendChild(createTweetElement(tweet, true));
+        });
+      } else {
+        // Manual generate: prepend to top
+        tweets.forEach((tweet, i) => {
+          setTimeout(() => {
+            const el = createTweetElement(tweet, true);
+            container.prepend(el);
+          }, i * 200);
+        });
+      }
+
+      updateStats();
+      if (!silent) showToast(`${tweets.length} new tweets from AI personas!`);
+    } else if (!silent) {
+      showToast('No tweets generated. Check your API key.');
+    }
+  } catch (err) {
+    if (!silent) showToast('Generation failed. Check your API key.');
+    console.error(err);
+  }
+
+  btn.disabled = false;
+  textEl.style.display = 'inline';
+  spinnerEl.style.display = 'none';
+  btn.querySelector('svg').style.display = 'inline';
+  loadingEl.style.display = 'none';
+  isGenerating = false;
+}
+
+// ============================================
+// Infinite Scroll
+// ============================================
+
+function setupInfiniteScroll() {
+  const mainContent = document.querySelector('.main-content');
+
+  mainContent.addEventListener('scroll', () => {
+    if (currentView !== 'feed') return;
+    if (isGenerating) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = mainContent;
+    // Trigger when within 200px of the bottom
+    if (scrollTop + clientHeight >= scrollHeight - 200) {
+      generateTweets(true);
+    }
   });
 }
 

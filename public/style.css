@@ -295,6 +295,8 @@ body {
 .main-content {
   border-right: 1px solid var(--border-color);
   min-height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
 }
 
 .view {
