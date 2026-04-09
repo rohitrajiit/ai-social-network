@@ -307,8 +307,6 @@ app.post('/api/generate', async (req, res) => {
   for (let i = 0; i < selectedPersonas.length; i++) {
     const persona = selectedPersonas[i];
     try {
-      // Delay between requests to avoid rate limiting (free tier)
-      if (i > 0) await sleep(3000);
       const content = await generateTweet(persona);
       if (content) {
         const tweet = {
