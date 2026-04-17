@@ -467,6 +467,19 @@ function createTweetElement(tweet, isNew = false) {
     }
   }
 
+  let linkHTML = '';
+  if (tweet.link) {
+    linkHTML = `
+      <div class="tweet-link" style="margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--bg-secondary); border-radius: var(--radius-full); font-size: 13px; font-weight: 500;">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+        </svg>
+        <a href="${tweet.link}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none;">Read Source Article</a>
+      </div>
+    `;
+  }
+
   el.innerHTML = `
     <div class="tweet-avatar" style="color:${tweet.color}">
       ${tweet.avatar}
@@ -480,6 +493,7 @@ function createTweetElement(tweet, isNew = false) {
         <span class="tweet-time">${timeStr}</span>
       </div>
       <div class="tweet-content">${escapeHTML(tweet.content)}</div>
+      ${linkHTML}
       <div class="tweet-actions">
         <button class="tweet-action like ${tweet.liked ? 'active' : ''}" data-id="${tweet.id}" title="Like">
           <svg viewBox="0 0 24 24" fill="${tweet.liked ? 'var(--like-color)' : 'none'}" stroke="currentColor" stroke-width="2">
