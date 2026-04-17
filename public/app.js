@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupNavigation();
   setupCompose();
   setupGenerate();
+  setupAddPersona();
   setupModelInput();
   setupInfiniteScroll();
   renderSuggestedPersonas();
@@ -201,6 +202,82 @@ function setupGenerate() {
 }
 
 // ============================================
+// Add Persona
+// ============================================
+
+function setupAddPersona() {
+  const btnOpen = document.getElementById('btn-add-persona');
+  const modal = document.getElementById('add-persona-modal');
+  const btnCancel = document.getElementById('ap-cancel');
+  const form = document.getElementById('add-persona-form');
+
+  if (btnOpen) {
+    btnOpen.addEventListener('click', () => {
+      modal.style.display = 'flex';
+    });
+  }
+
+  if (btnCancel) {
+    btnCancel.addEventListener('click', () => {
+      modal.style.display = 'none';
+      form.reset();
+    });
+  }
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      let handle = document.getElementById('ap-handle').value.trim();
+      if (!handle.startsWith('@')) handle = '@' + handle;
+
+      const newPersona = {
+        name: document.getElementById('ap-name').value.trim(),
+        handle: handle,
+        field: document.getElementById('ap-field').value.trim(),
+        color: document.getElementById('ap-color').value,
+        bio: document.getElementById('ap-bio').value.trim(),
+        avatar: document.getElementById('ap-avatar').value.trim() || '🤖',
+        systemPrompt: document.getElementById('ap-prompt').value.trim(),
+        feeds: document.getElementById('ap-feeds').value.trim()
+      };
+
+      const submitBtn = form.querySelector('button[type="submit"]');
+      submitBtn.textContent = 'Creating...';
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch(API.personas, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newPersona)
+        });
+        
+        if (res.ok) {
+          showToast('Persona created!');
+          await loadPersonas();
+          if (currentView === 'personas') renderPersonas();
+          if (currentView === 'explore') renderExplore();
+          renderSuggestedPersonas();
+          updateStats();
+          
+          modal.style.display = 'none';
+          form.reset();
+        } else {
+          const err = await res.json();
+          showToast('Error: ' + (err.error || 'Failed to create'));
+        }
+      } catch {
+        showToast('Failed to create persona');
+      }
+      
+      submitBtn.textContent = 'Create Persona';
+      submitBtn.disabled = false;
+    });
+  }
+}
+
+// ============================================
 // Feed
 // ============================================
 
@@ -282,6 +359,16 @@ function renderPersonas() {
     const card = document.createElement('div');
     card.className = 'persona-card';
     card.style.animationDelay = `${i * 0.05}s`;
+    card.style.position = 'relative';
+    
+    const deleteBtnHTML = p.isCustom ? `
+      <button class="delete-persona-btn" title="Delete Persona" style="position: absolute; right: 16px; top: 16px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+      </button>
+    ` : '';
+
     card.innerHTML = `
       <div class="persona-avatar" style="color:${p.color}">
         ${p.avatar}
@@ -290,9 +377,32 @@ function renderPersonas() {
         <div class="persona-name">${p.name}</div>
         <div class="persona-handle">${p.handle}</div>
         <div class="persona-bio">${p.bio}</div>
-        <span class="persona-field-tag" style="background:${p.color}20;color:${p.color}">${p.field}</span>
+        <span class="persona-field-tag" style="background:${p.color}20;color:${p.color}">${p.isNews ? '📡 ' : ''}${p.field}</span>
       </div>
+      ${deleteBtnHTML}
     `;
+
+    if (p.isCustom) {
+      const delBtn = card.querySelector('.delete-persona-btn');
+      if (delBtn) {
+        delBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (confirm('Are you sure you want to delete ' + p.name + '?')) {
+            try {
+              await fetch(API.personas + '/' + p.id, { method: 'DELETE' });
+              showToast('Persona deleted');
+              await loadPersonas();
+              renderPersonas();
+              renderSuggestedPersonas();
+              updateStats();
+            } catch {
+              showToast('Failed to delete');
+            }
+          }
+        });
+      }
+    }
+
     container.appendChild(card);
   });
 }
@@ -349,7 +459,12 @@ function createTweetElement(tweet, isNew = false) {
   if (!tweet.isUser) {
     const persona = personas.find(p => p.id === tweet.personaId);
     const color = persona?.color || tweet.color;
-    badgeHTML = `<span class="tweet-badge" style="background:${color}18;color:${color}">AI</span>`;
+    const isNews = persona?.isNews;
+    if (isNews) {
+      badgeHTML = `<span class="tweet-badge" style="background:${color}18;color:${color}">📡 NEWS</span>`;
+    } else {
+      badgeHTML = `<span class="tweet-badge" style="background:${color}18;color:${color}">AI</span>`;
+    }
   }
 
   el.innerHTML = `
@@ -622,6 +737,9 @@ function escapeHTML(str) {
 function updateStats() {
   fetch(API.feed).then(r => r.json()).then(tweets => {
     document.getElementById('stat-tweets').textContent = tweets.length;
+  }).catch(() => {});
+  fetch(API.personas).then(r => r.json()).then(p => {
+    document.getElementById('stat-personas').textContent = p.length;
   }).catch(() => {});
 }
 

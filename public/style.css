@@ -165,6 +165,51 @@ body {
   text-decoration: underline;
 }
 
+/* Modal Forms */
+.form-group-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-group.row {
+  flex-direction: row;
+  gap: 12px;
+}
+.form-group label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.form-group input {
+  margin-bottom: 0;
+}
+.form-group input[type="color"] {
+  height: 48px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  padding: 14px;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font);
+}
+.btn-secondary:hover {
+  background: var(--border-light);
+}
+
 /* ============================================
    App Layout — 3 Column
    ============================================ */
@@ -796,6 +841,27 @@ body {
   color: var(--text-secondary);
   line-height: 1.4;
   margin-bottom: 8px;
+}
+
+.delete-persona-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-full);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.delete-persona-btn svg {
+  width: 18px;
+  height: 18px;
+}
+.delete-persona-btn:hover {
+  color: var(--danger);
+  background: rgba(244, 33, 46, 0.08);
 }
 
 .persona-field-tag {

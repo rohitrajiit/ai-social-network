@@ -118,6 +118,7 @@
       <section id="view-personas" class="view">
         <header class="view-header">
           <h1>AI Personas</h1>
+          <button class="btn-primary btn-sm" id="btn-add-persona" style="padding: 6px 12px; border-radius: var(--radius-full); font-size: 14px; border: none; background: linear-gradient(135deg, var(--accent), var(--accent-hover)); color: white; cursor: pointer; font-family: var(--font); font-weight: 600;">+ Add Persona</button>
         </header>
         <div id="personas-container" class="personas-grid"></div>
       </section>
@@ -145,6 +146,56 @@
         </div>
       </div>
     </aside>
+  </div>
+
+  <!-- Add Persona Modal -->
+  <div id="add-persona-modal" class="modal-overlay" style="display:none;">
+    <div class="modal modal-lg" style="max-width: 500px; text-align: left; max-height: 90vh; overflow-y: auto;">
+      <h2 style="text-align: center;">Create Persona</h2>
+      <p style="text-align: center;">Define a new AI persona to join your network.</p>
+      <form id="add-persona-form" class="form-group-wrap">
+        <div class="form-group row">
+          <div class="form-col" style="flex: 1;">
+            <label>Name</label>
+            <input type="text" id="ap-name" placeholder="e.g. Satoshi Nakamoto" required>
+          </div>
+          <div class="form-col" style="flex: 1;">
+            <label>Handle</label>
+            <input type="text" id="ap-handle" placeholder="e.g. @Satoshi" required>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="form-col" style="flex: 1;">
+            <label>Field / Expertise</label>
+            <input type="text" id="ap-field" placeholder="e.g. Cryptography" required>
+          </div>
+          <div class="form-col" style="flex: 1;">
+            <label>Color</label>
+            <input type="color" id="ap-color" value="#8b5cf6" style="padding: 2px; height: 48px; cursor: pointer;">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Bio</label>
+          <input type="text" id="ap-bio" placeholder="Brief description visible on profile">
+        </div>
+        <div class="form-group">
+          <label>Avatar (Emoji)</label>
+          <input type="text" id="ap-avatar" placeholder="e.g. 🪙" maxlength="2" value="🤖">
+        </div>
+        <div class="form-group">
+          <label>System Prompt</label>
+          <textarea id="ap-prompt" placeholder="You are Satoshi Nakamoto (@Satoshi). Your style is mysterious, technical..." rows="3" required style="width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); font-family: var(--font); outline: none; resize: vertical;"></textarea>
+        </div>
+        <div class="form-group">
+          <label>RSS Feeds (Optional)</label>
+          <input type="text" id="ap-feeds" placeholder="Comma-separated URLs for news personas">
+        </div>
+        <div class="form-actions" style="display: flex; gap: 12px; margin-top: 24px;">
+          <button type="button" id="ap-cancel" class="btn-secondary" style="flex: 1;">Cancel</button>
+          <button type="submit" class="btn-primary" style="flex: 1;">Create Persona</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script src="app.js"></script>
