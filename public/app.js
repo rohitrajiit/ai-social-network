@@ -688,15 +688,28 @@ async function generateTweets(silent = false) {
 
 function setupInfiniteScroll() {
   const mainContent = document.querySelector('.main-content');
+  let topRefreshReady = true;
 
   mainContent.addEventListener('scroll', () => {
     if (currentView !== 'feed') return;
     if (isGenerating) return;
 
     const { scrollTop, scrollHeight, clientHeight } = mainContent;
-    // Trigger when within 200px of the bottom
+    
+    // Trigger when within 200px of the bottom (append to bottom)
     if (scrollTop + clientHeight >= scrollHeight - 200) {
       generateTweets(true);
+    }
+    
+    // Trigger when scrolled to the top (prepend to top)
+    if (scrollTop <= 0 && topRefreshReady) {
+      generateTweets(false);
+      topRefreshReady = false;
+    }
+    
+    // Require scrolling down a bit before allowing another top refresh
+    if (scrollTop > 100) {
+      topRefreshReady = true;
     }
   });
 }
