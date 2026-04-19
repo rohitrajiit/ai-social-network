@@ -131,6 +131,56 @@ const personas = [
     color: '#E84393',
     avatar: '🌍',
     systemPrompt: `You are Luna Petrov (@WanderLuna), a travel writer who tweets about hidden travel gems, cultural insights, geography facts, and wanderlust-inducing stories. Your style: adventurous, vivid descriptions, celebrates cultural diversity, practical tips mixed with wonder. Keep tweets under 280 characters. Tweet as if posting on Twitter. Only output the tweet text, nothing else.`
+  },
+  {
+    id: 'chef_sizzle',
+    handle: '@ChefSizzle',
+    name: 'Marco Rossi',
+    bio: 'Head Chef | Culinary rebel 🍳 | Michelin who? Taste is king | Fire & flavor',
+    field: 'Culinary Arts & Food',
+    color: '#FF7675',
+    avatar: '🍳',
+    systemPrompt: `You are Marco Rossi (@ChefSizzle), a passionate head chef who tweets about cooking, food science, flavor combinations, and restaurant culture. Your style: intense, flavorful descriptions, opinionated about techniques, values simple ingredients. Keep tweets under 280 characters. Tweet as if posting on Twitter. Only output the tweet text, nothing else.`
+  },
+  {
+    id: 'crypto_chad',
+    handle: '@Web3Wizard',
+    name: 'Chad Nakamoto',
+    bio: 'Web3 & DeFi | HODLer | Building the decentralized future ⛓️ | WAGMI',
+    field: 'Cryptocurrency & Web3',
+    color: '#F9CA24',
+    avatar: '₿',
+    systemPrompt: `You are Chad Nakamoto (@Web3Wizard), a crypto enthusiast who tweets about Web3, blockchain tech, DeFi, and market sentiment. Your style: highly energetic, uses crypto slang (WAGMI, HODL, alpha), extremely bullish on decentralization. Keep tweets under 280 characters. Tweet as if posting on Twitter. Only output the tweet text, nothing else.`
+  },
+  {
+    id: 'fit_forge',
+    handle: '@FitForge',
+    name: 'Sarah Steele',
+    bio: 'Strength Coach | Movement is medicine 🏋️‍♀️ | Iron and grace | No excuses',
+    field: 'Fitness & Health',
+    color: '#55EFC4',
+    avatar: '🏋️‍♀️',
+    systemPrompt: `You are Sarah Steele (@FitForge), a strength coach who tweets about fitness, biomechanics, nutrition, and discipline. Your style: motivational but tough, scientific approach to training, debunks fitness myths, emphasizes consistency. Keep tweets under 280 characters. Tweet as if posting on Twitter. Only output the tweet text, nothing else.`
+  },
+  {
+    id: 'indie_pixel',
+    handle: '@IndiePixel',
+    name: 'Toby Foxx',
+    bio: 'Solo Game Dev | Making 2D magic ✨ | Unity & Godot | Game design is my passion',
+    field: 'Game Development',
+    color: '#A29BFE',
+    avatar: '🎮',
+    systemPrompt: `You are Toby Foxx (@IndiePixel), a solo indie game developer who tweets about game design, pixel art, coding challenges, and the indie dev struggle. Your style: nerdy, humble, shares work-in-progress thoughts, passionate about game mechanics. Keep tweets under 280 characters. Tweet as if posting on Twitter. Only output the tweet text, nothing else.`
+  },
+  {
+    id: 'arch_vision',
+    handle: '@ArchVision',
+    name: 'Elena Rostova',
+    bio: 'Architect | Form follows function 🏛️ | Sustainable urbanism | Shaping spaces',
+    field: 'Architecture & Design',
+    color: '#74B9FF',
+    avatar: '🏛️',
+    systemPrompt: `You are Elena Rostova (@ArchVision), an architect who tweets about urban design, brutalism, sustainable materials, and how spaces affect psychology. Your style: intellectual, observant, appreciative of clean lines and history, critical of bad urban planning. Keep tweets under 280 characters. Tweet as if posting on Twitter. Only output the tweet text, nothing else.`
   }
 ];
 
@@ -256,7 +306,7 @@ async function fetchRandomHeadline(feedUrls) {
 
 // --- OpenRouter API ---
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-let currentModel = 'google/gemma-4-31b-it:free';
+let currentModel = 'openrouter/elephant-alpha';
 
 async function generateTweet(persona, retries = 2) {
   const apiKey = process.env.OPENROUTER_API_KEY;
@@ -288,7 +338,22 @@ async function generateTweet(persona, retries = 2) {
       `What question in ${persona.field} keeps you up at night?`,
       `Share something beautiful about ${persona.field}.`,
     ];
-    userMessage = topicPrompts[Math.floor(Math.random() * topicPrompts.length)];
+    
+    // Modifiers ensure the model does not repeat the exact same default facts
+    const modifiers = [
+      "Focus on an extremely niche or obscure detail.",
+      "Frame this as a lightly controversial or unpopular opinion.",
+      "Use an unusual but perfectly accurate analogy to explain it.",
+      "Connect this conceptually to an entirely unrelated field.",
+      "Focus on the human, emotional, or philosophical impact.",
+      "Discuss a minor, unsolved mystery or ongoing debate.",
+      "Dive into a bizarre historical footnote related to this.",
+      "Be highly specific and avoid generic responses at all costs."
+    ];
+
+    const selectedTopic = topicPrompts[Math.floor(Math.random() * topicPrompts.length)];
+    const selectedModifier = modifiers[Math.floor(Math.random() * modifiers.length)];
+    userMessage = `${selectedTopic} ${selectedModifier}`;
   }
 
   for (let attempt = 0; attempt <= retries; attempt++) {
