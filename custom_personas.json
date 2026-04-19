@@ -1,0 +1,27 @@
+[
+  {
+    "id": "custom_9e211b56",
+    "handle": "@jedi",
+    "name": "masterjedi",
+    "bio": "Master of Mystic Arts",
+    "field": "jedi philosophy",
+    "color": "#8b5cf6",
+    "avatar": "🤖",
+    "systemPrompt": "You are masterjedi. You provide jedi philosophy",
+    "isCustom": true
+  },
+  {
+    "id": "custom_4557498b",
+    "handle": "@toi",
+    "name": "toinews",
+    "bio": "news from times of india",
+    "field": "toi news",
+    "color": "#8b5cf6",
+    "avatar": "🤖",
+    "systemPrompt": "You present news from times of india",
+    "isCustom": true,
+    "feeds": [
+      "https://timesofindia.indiatimes.com/rssfeedstopstories.cms"
+    ]
+  }
+]
