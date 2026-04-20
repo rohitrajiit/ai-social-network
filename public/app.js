@@ -102,6 +102,13 @@ function setupNavigation() {
       switchView(view);
     });
   });
+
+  const btnProfileBack = document.getElementById('btn-profile-back');
+  if (btnProfileBack) {
+    btnProfileBack.addEventListener('click', () => {
+      switchView('feed');
+    });
+  }
 }
 
 function switchView(view) {
@@ -357,7 +364,7 @@ function renderPersonas() {
 
   personas.forEach((p, i) => {
     const card = document.createElement('div');
-    card.className = 'persona-card';
+    card.className = 'persona-card clickable';
     card.style.animationDelay = `${i * 0.05}s`;
     card.style.position = 'relative';
     
@@ -404,6 +411,7 @@ function renderPersonas() {
     }
 
     container.appendChild(card);
+    card.addEventListener('click', () => openProfile(p.id));
   });
 }
 
@@ -414,7 +422,7 @@ function renderExplore() {
   const shuffled = [...personas].sort(() => Math.random() - 0.5);
   shuffled.forEach(p => {
     const card = document.createElement('div');
-    card.className = 'explore-card';
+    card.className = 'explore-card clickable';
     card.innerHTML = `
       <div class="explore-field" style="color:${p.color}">${p.field}</div>
       <div class="explore-persona-name">${p.name}</div>
@@ -422,6 +430,7 @@ function renderExplore() {
       <div class="explore-bio">${p.bio}</div>
     `;
     container.appendChild(card);
+    card.addEventListener('click', () => openProfile(p.id));
   });
 }
 
@@ -431,7 +440,7 @@ function renderSuggestedPersonas() {
 
   shuffled.forEach(p => {
     const el = document.createElement('div');
-    el.className = 'suggested-persona';
+    el.className = 'suggested-persona clickable';
     el.innerHTML = `
       <div class="suggested-avatar" style="color:${p.color}">${p.avatar}</div>
       <div class="suggested-info">
@@ -440,7 +449,65 @@ function renderSuggestedPersonas() {
       </div>
     `;
     container.appendChild(el);
+    el.addEventListener('click', () => openProfile(p.id));
   });
+}
+
+async function openProfile(personaId) {
+  if (personaId === 'user') return; // Do nothing for user "You"
+  
+  const persona = personas.find(p => p.id === personaId);
+  if (!persona) return;
+
+  // Update header
+  document.getElementById('profile-header-name').textContent = persona.name;
+  
+  // Update banner/avatar styles
+  document.getElementById('profile-avatar').textContent = persona.avatar;
+  document.getElementById('profile-avatar').style.color = persona.color;
+  document.querySelector('.profile-banner').style.background = `linear-gradient(135deg, ${persona.color}20, ${persona.color}40, transparent)`;
+
+  // Update details
+  document.getElementById('profile-name').textContent = persona.name;
+  document.getElementById('profile-handle').textContent = persona.handle;
+  document.getElementById('profile-bio').innerHTML = persona.bio ? escapeHTML(persona.bio) : '';
+  
+  const fieldEl = document.getElementById('profile-field');
+  fieldEl.textContent = (persona.isNews ? '📡 ' : '') + persona.field;
+  fieldEl.style.color = persona.color;
+
+  // Switch view
+  switchView('profile');
+
+  // Load tweets
+  const container = document.getElementById('profile-feed-container');
+  const emptyState = document.getElementById('profile-feed-empty');
+  const loading = document.getElementById('profile-loading');
+  const countsEl = document.getElementById('profile-header-tweets');
+
+  container.innerHTML = '';
+  emptyState.style.display = 'none';
+  loading.style.display = 'flex';
+  countsEl.textContent = '...';
+
+  try {
+    const res = await fetch(`${API.feed}?personaId=${personaId}`);
+    const tweets = await res.json();
+    loading.style.display = 'none';
+
+    countsEl.textContent = `${tweets.length} Post${tweets.length === 1 ? '' : 's'}`;
+
+    if (tweets.length === 0) {
+      emptyState.style.display = 'flex';
+    } else {
+      tweets.forEach(tweet => {
+        container.appendChild(createTweetElement(tweet));
+      });
+    }
+  } catch (err) {
+    loading.style.display = 'none';
+    emptyState.style.display = 'flex';
+  }
 }
 
 // ============================================
@@ -481,12 +548,12 @@ function createTweetElement(tweet, isNew = false) {
   }
 
   el.innerHTML = `
-    <div class="tweet-avatar" style="color:${tweet.color}">
+    <div class="tweet-avatar clickable" style="color:${tweet.color}">
       ${tweet.avatar}
     </div>
     <div class="tweet-body">
       <div class="tweet-header">
-        <span class="tweet-name">${tweet.name}</span>
+        <span class="tweet-name clickable">${tweet.name}</span>
         ${badgeHTML}
         <span class="tweet-handle">${tweet.handle}</span>
         <span class="tweet-dot">·</span>
@@ -518,6 +585,17 @@ function createTweetElement(tweet, isNew = false) {
   `;
 
   // Event listeners
+  if (!tweet.isUser) {
+    el.querySelector('.tweet-avatar').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openProfile(tweet.personaId);
+    });
+    el.querySelector('.tweet-name').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openProfile(tweet.personaId);
+    });
+  }
+
   el.querySelector('.tweet-action.like').addEventListener('click', (e) => {
     e.stopPropagation();
     handleLike(tweet.id, el);

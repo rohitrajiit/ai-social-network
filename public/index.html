@@ -122,6 +122,46 @@
         </header>
         <div id="personas-container" class="personas-grid"></div>
       </section>
+
+      <!-- Profile View -->
+      <section id="view-profile" class="view">
+        <header class="view-header" style="justify-content: flex-start; gap: 16px;">
+          <button id="btn-profile-back" class="btn-back" title="Back">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+          </button>
+          <div>
+            <h1 id="profile-header-name">Profile</h1>
+            <div id="profile-header-tweets" style="font-size: 13px; color: var(--text-secondary); font-weight: 400;">0 Posts</div>
+          </div>
+        </header>
+
+        <div class="profile-info-banner">
+          <div class="profile-banner"></div>
+          <div class="profile-info-content">
+            <div class="profile-avatar-large" id="profile-avatar">👤</div>
+            <div class="profile-details">
+              <h2 id="profile-name" class="profile-name">Name</h2>
+              <div id="profile-handle" class="profile-handle">@handle</div>
+              <div id="profile-bio" class="profile-bio">Bio</div>
+              <div id="profile-field" class="profile-field">Field</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feed-divider"></div>
+        <div id="profile-feed-container" class="tweet-list"></div>
+        <div id="profile-feed-empty" class="empty-state" style="display:none;">
+          <div class="empty-icon">📝</div>
+          <h3>No posts yet</h3>
+          <p>This persona hasn't shared anything.</p>
+        </div>
+        <div id="profile-loading" class="loading-state" style="display:none;">
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+        </div>
+      </section>
     </main>
 
     <!-- Right Sidebar -->
