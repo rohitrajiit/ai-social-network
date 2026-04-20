@@ -469,7 +469,11 @@ app.delete('/api/personas/:id', (req, res) => {
 
 // Get feed
 app.get('/api/feed', (req, res) => {
-  const tweets = loadTweets();
+  let tweets = loadTweets();
+  const { personaId } = req.query;
+  if (personaId) {
+    tweets = tweets.filter(t => t.personaId === personaId);
+  }
   tweets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   res.json(tweets);
 });
